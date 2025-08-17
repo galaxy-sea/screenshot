@@ -1,0 +1,44 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
+    <id>plus.wcj.jetbrains.plugins.screenshot</id>
+
+    <!-- Public plugin name should be written in Title Case.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-name -->
+    <name>Screenshot</name>
+
+    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+    <vendor url="https://github.com/galaxy-sea" email="weichangjin1996@gmail.com">ChangJin Wei (魏昌进)</vendor>
+
+    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
+    <description><![CDATA[
+        <p>一个截图软件一个截图软件一个截图软件一个截图软件一个截图软件一个截图软件一个截图软件一个截图软件</p>
+    ]]></description>
+
+    <!-- Product and plugin compatibility requirements.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <!-- Extension points defined by the plugin.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceImplementation="plus.wcj.jetbrains.plugins.screenshot.config.ScreenshotStateProvider"/>
+        <notificationGroup displayType="BALLOON" id="Screenshot" isLogByDefault="false"/>
+        <applicationConfigurable
+                groupId="other"
+                instance="plus.wcj.jetbrains.plugins.screenshot.config.ScreenshotConfigurable"
+                id="Screenshot"
+                displayName="Screenshot"/>
+    </extensions>
+
+
+    <actions>
+        <action id="plus.wcj.jetbrains.plugins.screenshot.ScreenshotAction"
+                class="plus.wcj.jetbrains.plugins.screenshot.ScreenshotAction" text="Screenshot Selected Code"
+                description="Screenshot the selected code snippet">
+            <add-to-group group-id="Copy.Paste.Special"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl S"/>
+        </action>
+    </actions>
+</idea-plugin>
