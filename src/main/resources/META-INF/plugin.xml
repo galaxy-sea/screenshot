@@ -37,7 +37,7 @@
         <action id="plus.wcj.jetbrains.plugins.screenshot.ScreenshotAction"
                 class="plus.wcj.jetbrains.plugins.screenshot.ScreenshotAction" text="Screenshot Selected Code"
                 description="Screenshot the selected code snippet">
-            <add-to-group group-id="Copy.Paste.Special"/>
+            <add-to-group group-id="EditorPopupMenu"/>
             <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl S"/>
         </action>
     </actions>
