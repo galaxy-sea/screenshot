@@ -28,3 +28,12 @@
 <ul>
   <li>The plugin does not access the network or upload your code.</li>
 </ul>
+
+
+## 🙏 Acknowledgments / References
+
+This project draws inspiration from the following open-source projects. Many thanks to their authors and contributors:
+
+- [amaembo/screenshoter](https://github.com/amaembo/screenshoter)
+- [0x3C50/easy-code-screenshots](https://github.com/0x3C50/easy-code-screenshots)
+
