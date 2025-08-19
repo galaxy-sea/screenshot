@@ -180,13 +180,13 @@ public class ScreenshotAction extends DumbAwareAction {
         } else if (state.save) {
             content = "Saved to:";
         } else {
-            saveToFile = NotificationAction.createSimpleExpiring("Open Screenshot settings", () ->
-                    ShowSettingsUtil.getInstance().showSettingsDialog(project, "Screenshot"));
+            saveToFile = NotificationAction.createSimpleExpiring("Open Screenshot Pro settings", () ->
+                    ShowSettingsUtil.getInstance().showSettingsDialog(project, "Screenshot Pro"));
         }
 
         Notification notification = NotificationGroupManager.getInstance()
-                                                            .getNotificationGroup("Screenshot")
-                                                            .createNotification("Screenshot", content, NotificationType.INFORMATION);
+                                                            .getNotificationGroup("Screenshot Pro")
+                                                            .createNotification("Screenshot Pro", content, NotificationType.INFORMATION);
         if (saveToFile != null) {
             notification.addAction(saveToFile);
         }
@@ -196,8 +196,8 @@ public class ScreenshotAction extends DumbAwareAction {
 
     private static void notifyError(Project project, String content) {
         NotificationGroupManager.getInstance()
-                                .getNotificationGroup("Screenshot")
-                                .createNotification("Screenshot", content, NotificationType.ERROR)
+                                .getNotificationGroup("Screenshot Pro")
+                                .createNotification("Screenshot Pro", content, NotificationType.ERROR)
                                 .notify(project);
     }
 

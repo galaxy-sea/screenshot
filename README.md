@@ -1,6 +1,6 @@
-<h2>Screenshot — Export code to image with one click</h2>
+<h2>Screenshot Pro — Export code to image with one click</h2>
 
-<p><b>Screenshot</b> is a code-to-image plugin for the IntelliJ Platform. It renders directly from editor components and supports exporting both the <i>Gutter</i> and the <i>Content Component</i>, or only the selected code when applicable.</p>
+<p><b>Screenshot Pro</b> is a code-to-image plugin for the IntelliJ Platform. It renders directly from editor components and supports exporting both the <i>Gutter</i> and the <i>Content Component</i>, or only the selected code when applicable.</p>
 
 <h3>Key Features</h3>
 <ul>
@@ -17,7 +17,7 @@
 </ol>
 
 <h3>Settings</h3>
-<p>Path: <b>Settings | Other Settings | Screenshot</b></p>
+<p>Path: <b>Settings | Other Settings | Screenshot Pro</b></p>
 <ul>
   <li><b>Include gutter</b>: Whether to include the gutter.</li>
   <li><b>Export mode</b>: Clipboard / Save.</li>

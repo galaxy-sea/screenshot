@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author ChangJin Wei (魏昌进)
  */
-@State(name = "screenshot", storages = {@Storage(value = "screenshot.xml")}, category = SettingsCategory.PLUGINS)
+@State(name = "ScreenshotPro", storages = {@Storage(value = "screenshotPro.xml")}, category = SettingsCategory.PLUGINS)
 public class ScreenshotStateProvider implements PersistentStateComponent<ScreenshotState> {
 
     ScreenshotState config = new ScreenshotState();

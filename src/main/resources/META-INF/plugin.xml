@@ -5,7 +5,7 @@
 
     <!-- Public plugin name should be written in Title Case.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-name -->
-    <name>Screenshot</name>
+    <name>Screenshot Pro</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
     <vendor url="https://github.com/galaxy-sea" email="weichangjin1996@gmail.com">ChangJin Wei (魏昌进)</vendor>
@@ -14,9 +14,9 @@
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
     <description>
         <![CDATA[
-            <h2>Screenshot — Export code to image with one click</h2>
+            <h2>Screenshot Pro — Export code to image with one click</h2>
 
-            <p><b>Screenshot</b> is a code-to-image plugin for the IntelliJ Platform. It renders directly from editor components and supports exporting both the <i>Gutter</i> and the <i>Content Component</i>, or only the selected code when applicable.</p>
+            <p><b>Screenshot Pro</b> is a code-to-image plugin for the IntelliJ Platform. It renders directly from editor components and supports exporting both the <i>Gutter</i> and the <i>Content Component</i>, or only the selected code when applicable.</p>
 
             <h3>Key Features</h3>
             <ul>
@@ -33,7 +33,7 @@
             </ol>
 
             <h3>Settings</h3>
-            <p>Path: <b>Settings | Other Settings | Screenshot</b></p>
+            <p>Path: <b>Settings | Other Settings | Screenshot Pro</b></p>
             <ul>
               <li><b>Include gutter</b>: Whether to include the gutter.</li>
               <li><b>Export mode</b>: Clipboard / Save.</li>
@@ -65,19 +65,19 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <applicationService serviceImplementation="plus.wcj.jetbrains.plugins.screenshot.config.ScreenshotStateProvider"/>
-        <notificationGroup displayType="BALLOON" id="Screenshot" isLogByDefault="false"/>
+        <notificationGroup displayType="BALLOON" id="Screenshot Pro" isLogByDefault="false"/>
         <applicationConfigurable
                 groupId="other"
                 instance="plus.wcj.jetbrains.plugins.screenshot.config.ScreenshotConfigurable"
-                id="Screenshot"
-                displayName="Screenshot"/>
+                id="Screenshot Pro"
+                displayName="Screenshot Pro"/>
     </extensions>
 
 
     <actions>
         <action id="plus.wcj.jetbrains.plugins.screenshot.ScreenshotAction"
                 class="plus.wcj.jetbrains.plugins.screenshot.ScreenshotAction" text="Screenshot Selected Code"
-                description="Screenshot the selected code snippet">
+                description="Screenshot Pro the selected code snippet">
             <add-to-group group-id="EditorPopupMenu"/>
             <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl S"/>
         </action>
