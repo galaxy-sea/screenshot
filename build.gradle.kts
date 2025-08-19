@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "plus.wcj.jetbrains.plugins"
-version = "1.0-SNAPSHOT"
+version = "1.0.0"
 
 repositories {
     mavenLocal()
@@ -37,10 +37,6 @@ intellijPlatform {
             sinceBuild = "223"
             untilBuild = "252"
         }
-
-        changeNotes = """
-            Initial version
-        """.trimIndent()
     }
 }
 

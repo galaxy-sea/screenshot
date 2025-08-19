@@ -12,9 +12,50 @@
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
-    <description><![CDATA[
-        <p>一个截图软件一个截图软件一个截图软件一个截图软件一个截图软件一个截图软件一个截图软件一个截图软件</p>
-    ]]></description>
+    <description>
+        <![CDATA[
+            <h2>Screenshot — Export code to image with one click</h2>
+
+            <p><b>Screenshot</b> is a code-to-image plugin for the IntelliJ Platform. It renders directly from editor components and supports exporting both the <i>Gutter</i> and the <i>Content Component</i>, or only the selected code when applicable.</p>
+
+            <h3>Key Features</h3>
+            <ul>
+              <li><b>Smart scope</b>: If text is selected, export only the selection; otherwise export the whole file area.</li>
+              <li><b>Gutter toggle</b>: Choose whether to include gutter elements such as line numbers and folding markers.</li>
+              <li><b>Export modes</b>: <b>Clipboard</b> (copy to clipboard), <b>Save</b> (write to disk), or <b>All</b> (both).</li>
+            </ul>
+
+            <h3>How to Use</h3>
+            <ol>
+              <li>(Optional) Select the code you want to export in the editor.</li>
+              <li>Use the context menu: <b>Screenshot Selected Code</b> / <b>Screenshot All Code</b>, or the shortcut (e.g., <code>Shift + Ctrl + S</code>).</li>
+              <li>Depending on your settings, the image will be copied to the clipboard, saved to a directory, or both.</li>
+            </ol>
+
+            <h3>Settings</h3>
+            <p>Path: <b>Settings | Other Settings | Screenshot</b></p>
+            <ul>
+              <li><b>Include gutter</b>: Whether to include the gutter.</li>
+              <li><b>Export mode</b>: Clipboard / Save.</li>
+              <li><b>Output directory</b>: Folder to save images (defaults to <code>~/Downloads</code> if not set).</li>
+            </ul>
+
+            <h3>Privacy & Security</h3>
+            <ul>
+              <li>The plugin does not access the network or upload your code.</li>
+            </ul>
+        ]]>
+    </description>
+
+    <change-notes>
+        <![CDATA[
+            <h3>1.0.0 </h3>
+            <ul>
+              <li>Export code to image rendered from editor components.</li>
+              <li>Smart scope: export selection if present; otherwise export the whole content area.</li>
+            </ul>
+        ]]>
+    </change-notes>
 
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
