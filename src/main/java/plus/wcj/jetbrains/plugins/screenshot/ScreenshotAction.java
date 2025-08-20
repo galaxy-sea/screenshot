@@ -251,11 +251,15 @@ public class ScreenshotAction extends DumbAwareAction {
         }
 
         public ComponentInfo(EditorGutterComponentEx gutterComponent, ComponentInfo componentInfo, ScreenshotState config) {
-            Dimension preferredSize = gutterComponent.getPreferredSize();
-            this.width = preferredSize.width;
-            this.height = componentInfo.height;
             this.component = gutterComponent;
-            this.show = config.includeGutter;
+            if (this.show = config.includeGutter) {
+                Dimension preferredSize = gutterComponent.getPreferredSize();
+                this.width = preferredSize.width;
+                this.height = componentInfo.height;
+            }else  {
+                this.width = 0;
+                this.height = 0;
+            }
         }
 
         public void translateXY(JComponent contentComponent, ComponentInfo contentInfo, ComponentInfo gutterInfo) {
