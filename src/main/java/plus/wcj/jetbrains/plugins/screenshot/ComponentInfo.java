@@ -33,6 +33,7 @@ class ComponentInfo {
 
     public int selectionStart, selectionEnd;
 
+    public final boolean diffLeft;
 
     public ComponentInfo(Editor editor, JComponent contentComponent, ScreenshotState config) {
         Document document = editor.getDocument();
@@ -62,23 +63,25 @@ class ComponentInfo {
         }
         this.component = contentComponent;
         this.show = true;
+        this.diffLeft = false;
     }
 
-    public ComponentInfo(EditorGutterComponentEx gutterComponent, ComponentInfo componentInfo, ScreenshotState config) {
+    public ComponentInfo(EditorGutterComponentEx gutterComponent, ComponentInfo contentInfo, ScreenshotState config) {
         this.component = gutterComponent;
         if (this.show = config.includeGutter) {
             Dimension preferredSize = gutterComponent.getPreferredSize();
             this.width = preferredSize.width;
-            this.height = componentInfo.height;
+            this.height = contentInfo.height;
         } else {
             this.width = 0;
             this.height = 0;
         }
+        this.diffLeft = gutterComponent.getLocationOnScreen().getX() > contentInfo.component.getLocationOnScreen().getX();
     }
 
-    public void translateXY(JComponent contentComponent, ComponentInfo contentInfo, ComponentInfo gutterInfo, boolean left) {
+    public void translateXY(JComponent contentComponent, ComponentInfo contentInfo, ComponentInfo gutterInfo) {
         if (gutterInfo.show) {
-            if (left) {
+            if (gutterInfo.diffLeft) {
                 this.x = 0;
                 this.translateX = 0;
             } else {
@@ -89,9 +92,9 @@ class ComponentInfo {
         }
     }
 
-    public void translateXY(EditorGutterComponentEx contentComponent, ComponentInfo contentInfo, ComponentInfo gutterInfo, boolean left) {
+    public void translateXY(EditorGutterComponentEx contentComponent, ComponentInfo contentInfo, ComponentInfo gutterInfo) {
         this.translateY = contentInfo.translateY;
-        if (left) {
+        if (gutterInfo.diffLeft) {
             this.x = contentInfo.width;
             this.translateX = contentInfo.width;
         } else {
