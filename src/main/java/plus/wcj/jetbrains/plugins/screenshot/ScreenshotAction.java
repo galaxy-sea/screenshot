@@ -51,6 +51,8 @@ import java.time.format.DateTimeFormatter;
  */
 public class ScreenshotAction extends DumbAwareAction {
 
+    public static final String ID = "Screenshot Pro";
+
     @Override
     public @NotNull ActionUpdateThread getActionUpdateThread() {
         return ActionUpdateThread.EDT;
@@ -242,12 +244,12 @@ public class ScreenshotAction extends DumbAwareAction {
             content = "Saved to:";
         } else {
             saveToFile = NotificationAction.createSimpleExpiring("Open Screenshot Pro settings", () ->
-                    ShowSettingsUtil.getInstance().showSettingsDialog(project, "Screenshot Pro"));
+                    ShowSettingsUtil.getInstance().showSettingsDialog(project, ID));
         }
 
         Notification notification = NotificationGroupManager.getInstance()
-                                                            .getNotificationGroup("Screenshot Pro")
-                                                            .createNotification("Screenshot Pro", content, NotificationType.INFORMATION);
+                                                            .getNotificationGroup(ID)
+                                                            .createNotification(ID, content, NotificationType.INFORMATION);
         if (saveToFile != null) {
             notification.addAction(saveToFile);
         }
@@ -257,8 +259,8 @@ public class ScreenshotAction extends DumbAwareAction {
 
     private static void notifyError(Project project, String content) {
         NotificationGroupManager.getInstance()
-                                .getNotificationGroup("Screenshot Pro")
-                                .createNotification("Screenshot Pro", content, NotificationType.ERROR)
+                                .getNotificationGroup(ID)
+                                .createNotification(ID, content, NotificationType.ERROR)
                                 .notify(project);
     }
 
