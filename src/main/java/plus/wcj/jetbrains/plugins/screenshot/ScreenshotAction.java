@@ -9,17 +9,14 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
-import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.SelectionModel;
-import com.intellij.openapi.editor.colors.EditorFontType;
 import com.intellij.openapi.editor.ex.EditorGutterComponentEx;
 import com.intellij.openapi.editor.impl.EditorImpl;
 import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.ImageUtil;
 import org.jetbrains.annotations.NotNull;
@@ -31,7 +28,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -49,6 +45,7 @@ public class ScreenshotAction extends DumbAwareAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
+        boolean left = true;
         ScreenshotState state = ScreenshotStateProvider.getInstance().getState();
 
         Project project = e.getProject();
@@ -65,8 +62,8 @@ public class ScreenshotAction extends DumbAwareAction {
         ComponentInfo contentInfo = new ComponentInfo(editor, contentComponent, state);
         ComponentInfo gutterInfo = new ComponentInfo(gutterComponent, contentInfo, state);
 
-        contentInfo.translateXY(contentComponent, contentInfo, gutterInfo);
-        gutterInfo.translateXY(gutterComponent, contentInfo, gutterInfo);
+        contentInfo.translateXY(contentComponent, contentInfo, gutterInfo, left);
+        gutterInfo.translateXY(gutterComponent, contentInfo, gutterInfo, left);
 
         int imageWidth = gutterInfo.width + contentInfo.width;
         int imageHeight = Math.max(gutterInfo.height, contentInfo.height);
@@ -199,115 +196,6 @@ public class ScreenshotAction extends DumbAwareAction {
                                 .getNotificationGroup("Screenshot Pro")
                                 .createNotification("Screenshot Pro", content, NotificationType.ERROR)
                                 .notify(project);
-    }
-
-
-    private static class ComponentInfo {
-
-        public int x, y;
-
-        public final int width, height;
-
-        public final JComponent component;
-
-        public final boolean show;
-
-        public int translateX, translateY;
-
-        //
-        public boolean hasSelection;
-
-        public int selectionStart, selectionEnd;
-
-
-        public ComponentInfo(Editor editor, JComponent contentComponent, ScreenshotState config) {
-            Document document = editor.getDocument();
-            this.hasSelection = editor.getSelectionModel().hasSelection();
-            if (this.hasSelection) {
-                SelectionModel selectionModel = editor.getSelectionModel();
-                this.selectionStart = selectionModel.getSelectionStart();
-                this.selectionEnd = selectionModel.getSelectionEnd();
-
-                Point start = editor.offsetToXY(selectionStart);
-                Point end = editor.offsetToXY(selectionEnd);
-
-                this.height = end.y - start.y + editor.getLineHeight();
-                this.width = getMaxSelectedLineWidth(editor, selectionStart, selectionEnd) + 12;
-                this.translateY = -start.y;
-                selectionModel.removeSelection();
-            } else {
-                int lineCount = document.getLineCount();
-                int lastLineOffset = document.getLineEndOffset(lineCount - 1);
-                int lineNumber = document.getLineNumber(lastLineOffset);
-                int lastLineStartOffset = document.getLineStartOffset(lineNumber);
-
-                Point lastLinePosition = editor.logicalPositionToXY(editor.offsetToLogicalPosition(lastLineStartOffset));
-                int lineHeight = editor.getLineHeight();
-                this.height = lastLinePosition.y + lineHeight;
-                this.width = contentComponent.getPreferredSize().width - 12;
-            }
-            this.component = contentComponent;
-            this.show = true;
-        }
-
-        public ComponentInfo(EditorGutterComponentEx gutterComponent, ComponentInfo componentInfo, ScreenshotState config) {
-            this.component = gutterComponent;
-            if (this.show = config.includeGutter) {
-                Dimension preferredSize = gutterComponent.getPreferredSize();
-                this.width = preferredSize.width;
-                this.height = componentInfo.height;
-            }else  {
-                this.width = 0;
-                this.height = 0;
-            }
-        }
-
-        public void translateXY(JComponent contentComponent, ComponentInfo contentInfo, ComponentInfo gutterInfo) {
-            if (gutterInfo.show) {
-                this.translateX = gutterInfo.width;
-                this.x = gutterInfo.width;
-            }
-        }
-
-        public void translateXY(EditorGutterComponentEx contentComponent, ComponentInfo contentInfo, ComponentInfo gutterInfo) {
-            this.translateX = 0;
-            this.translateY = contentInfo.translateY;
-        }
-
-
-        public void paint(Graphics2D graphics) {
-            if (show) {
-                graphics.setClip(this.x, this.y, this.width, this.height);
-                AffineTransform affineTransform = new AffineTransform();
-                affineTransform.translate(this.translateX, this.translateY);
-                graphics.setTransform(affineTransform);
-                component.paint(graphics);
-                graphics.setTransform(new AffineTransform());
-            }
-        }
-
-        private int getMaxSelectedLineWidth(Editor editor, int selectionStart, int selectionEnd) {
-            int maxWidth = 0;
-
-            int startLine = editor.getDocument().getLineNumber(selectionStart);
-            int endLine = editor.getDocument().getLineNumber(selectionEnd);
-
-            Font font = editor.getColorsScheme().getFont(EditorFontType.PLAIN);
-            Graphics2D graphics = (Graphics2D) editor.getComponent().getGraphics();
-            FontMetrics fontMetrics = graphics.getFontMetrics(font);
-
-
-            for (int lineNumber = startLine; lineNumber <= endLine; lineNumber++) {
-                int lineStartOffset = editor.getDocument().getLineStartOffset(lineNumber);
-                int lineEndOffset = editor.getDocument().getLineEndOffset(lineNumber);
-
-                String lineText = editor.getDocument().getText(new TextRange(lineStartOffset, lineEndOffset));
-                int lineWidth = fontMetrics.stringWidth(lineText);
-                maxWidth = Math.max(maxWidth, lineWidth);
-            }
-
-            return maxWidth;
-        }
     }
 
 
