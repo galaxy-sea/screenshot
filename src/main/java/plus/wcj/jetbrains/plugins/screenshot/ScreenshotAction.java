@@ -24,8 +24,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.Splitter;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.ui.JBSplitter;
-import com.intellij.ui.OnePixelSplitter;
 import com.intellij.util.ui.ImageUtil;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
@@ -141,7 +139,7 @@ public class ScreenshotAction extends DumbAwareAction {
         JComponent contentComponent = editor.getContentComponent();
         EditorGutterComponentEx gutterComponent = (EditorGutterComponentEx) editor.getGutter();
 
-        ComponentInfo contentInfo = new ComponentInfo(editor, contentComponent, state);
+        ComponentInfo contentInfo = new ComponentInfo(editor, contentComponent, state, project);
         ComponentInfo gutterInfo = new ComponentInfo(gutterComponent, contentInfo, state);
 
         contentInfo.translateXY(contentComponent, contentInfo, gutterInfo);

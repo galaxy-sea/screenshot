@@ -3,12 +3,17 @@ package plus.wcj.jetbrains.plugins.screenshot;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.SelectionModel;
+import com.intellij.openapi.editor.colors.EditorFontType;
 import com.intellij.openapi.editor.ex.EditorGutterComponentEx;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.TextRange;
 import plus.wcj.jetbrains.plugins.screenshot.config.ScreenshotState;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author ChangJin Wei (魏昌进)
@@ -18,7 +23,7 @@ class ComponentInfo {
 
     public int x, y;
 
-    public final int width, height;
+    public int width, height;
 
     public final JComponent component;
 
@@ -33,7 +38,9 @@ class ComponentInfo {
 
     public final boolean diffLeft;
 
-    public ComponentInfo(Editor editor, JComponent contentComponent, ScreenshotState config) {
+    public int miniLineIndent;
+
+    public ComponentInfo(Editor editor, JComponent contentComponent, ScreenshotState config, Project project) {
         Document document = editor.getDocument();
         this.hasSelection = editor.getSelectionModel().hasSelection();
         if (this.hasSelection) {
@@ -45,9 +52,10 @@ class ComponentInfo {
             Point end = editor.offsetToXY(selectionEnd);
 
             this.height = end.y - start.y + editor.getLineHeight();
-            this.width = getMaxSelectedLineWidth(editor, selectionStart, selectionEnd) + 24;
+            getMaxSelectedLineWidth(editor, selectionStart, selectionEnd, project);
             this.translateY = -start.y;
             selectionModel.removeSelection();
+
         } else {
             int lineCount = document.getLineCount();
             int lastLineOffset = document.getLineEndOffset(lineCount - 1);
@@ -86,8 +94,9 @@ class ComponentInfo {
                 this.x = gutterInfo.width;
                 this.translateX = gutterInfo.width;
             }
-
         }
+        this.translateX -= this.miniLineIndent;
+        this.width -= this.miniLineIndent;
     }
 
     public void translateXY(EditorGutterComponentEx contentComponent, ComponentInfo contentInfo, ComponentInfo gutterInfo) {
@@ -112,20 +121,67 @@ class ComponentInfo {
         }
     }
 
-    private int getMaxSelectedLineWidth(Editor editor, int selectionStart, int selectionEnd) {
+    private void getMaxSelectedLineWidth(Editor editor, int selectionStart, int selectionEnd, Project project) {
         int maxWidth = 0;
-
+        int LineY = Integer.MAX_VALUE;
+        int tabSize = tabSize(editor, project);
+        List<Integer> LineIndentList = new ArrayList<>();
         Document document = editor.getDocument();
         int startLine = document.getLineNumber(selectionStart);
         int endLine = document.getLineNumber(selectionEnd);
-
         for (int line = startLine; line <= endLine; line++) {
+            int lineStart = document.getLineStartOffset(line);
             int lineEnd = document.getLineEndOffset(line);
 
             int segEnd = Math.min(lineEnd, selectionEnd);
             Point pEnd = editor.visualPositionToXY(editor.offsetToVisualPosition(segEnd));
             maxWidth = Math.max(maxWidth, pEnd.x);
+            LineY = getLineY(pEnd, LineY, document, lineStart, lineEnd, tabSize, LineIndentList);
         }
-        return maxWidth;
+        int miniLineIndent = LineIndentList.stream()
+                                           .min(Integer::compareTo)
+                                           .filter(x -> x > 0)
+                                           .map(count -> {
+                                               Font font = editor.getColorsScheme().getFont(EditorFontType.PLAIN);
+                                               Graphics2D graphics = (Graphics2D) editor.getComponent().getGraphics();
+                                               FontMetrics fontMetrics = graphics.getFontMetrics(font);
+                                               return fontMetrics.stringWidth(" ".repeat(count));
+                                           })
+                                           .orElse(0);
+        this.width = maxWidth + 24;
+        this.miniLineIndent = miniLineIndent;
+    }
+
+    private static int getLineY(Point pEnd, int LineY, Document document, int lineStart, int lineEnd, int tabSize, List<Integer> LineIndentList) {
+        if (pEnd.y != LineY) {
+            LineY = pEnd.y;
+            if (lineStart == lineEnd) {
+                return LineY;
+            }
+            String text = document.getText(new TextRange(lineStart, lineEnd));
+            int indent = 0;
+            for (int i = 0; i < text.length(); i++) {
+                char ch = text.charAt(i);
+                if (' ' == ch) {
+                    indent++;
+                    continue;
+                } else if (Character.isWhitespace(ch)) {
+                    indent += tabSize;
+                    continue;
+                }
+                break;
+            }
+            LineIndentList.add(indent);
+        }
+        return LineY;
+    }
+
+
+    private int tabSize(Editor editor, Project project) {
+        try {
+            return editor.getSettings().getTabSize(project);
+        } catch (Throwable ignore) {
+            return 4;
+        }
     }
 }
