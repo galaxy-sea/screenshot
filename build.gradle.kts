@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "plus.wcj.jetbrains.plugins"
-version = "1.0.1"
+version = "1.1.0"
 
 repositories {
     mavenLocal()
