@@ -3,9 +3,7 @@ package plus.wcj.jetbrains.plugins.screenshot;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.SelectionModel;
-import com.intellij.openapi.editor.colors.EditorFontType;
 import com.intellij.openapi.editor.ex.EditorGutterComponentEx;
-import com.intellij.openapi.util.TextRange;
 import plus.wcj.jetbrains.plugins.screenshot.config.ScreenshotState;
 
 import javax.swing.*;
@@ -117,23 +115,17 @@ class ComponentInfo {
     private int getMaxSelectedLineWidth(Editor editor, int selectionStart, int selectionEnd) {
         int maxWidth = 0;
 
-        int startLine = editor.getDocument().getLineNumber(selectionStart);
-        int endLine = editor.getDocument().getLineNumber(selectionEnd);
+        Document document = editor.getDocument();
+        int startLine = document.getLineNumber(selectionStart);
+        int endLine = document.getLineNumber(selectionEnd);
 
-        Font font = editor.getColorsScheme().getFont(EditorFontType.PLAIN);
-        Graphics2D graphics = (Graphics2D) editor.getComponent().getGraphics();
-        FontMetrics fontMetrics = graphics.getFontMetrics(font);
+        for (int line = startLine; line <= endLine; line++) {
+            int lineEnd = document.getLineEndOffset(line);
 
-
-        for (int lineNumber = startLine; lineNumber <= endLine; lineNumber++) {
-            int lineStartOffset = editor.getDocument().getLineStartOffset(lineNumber);
-            int lineEndOffset = editor.getDocument().getLineEndOffset(lineNumber);
-
-            String lineText = editor.getDocument().getText(new TextRange(lineStartOffset, lineEndOffset));
-            int lineWidth = fontMetrics.stringWidth(lineText);
-            maxWidth = Math.max(maxWidth, lineWidth);
+            int segEnd = Math.min(lineEnd, selectionEnd);
+            Point pEnd = editor.visualPositionToXY(editor.offsetToVisualPosition(segEnd));
+            maxWidth = Math.max(maxWidth, pEnd.x);
         }
-
         return maxWidth;
     }
 }
