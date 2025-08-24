@@ -68,6 +68,7 @@ public final class ScreenshotUtil {
     }
 
 
+    /** {@link SimpleDiffModel.MyPaintable} */
     public static class ScreenshotPaintable implements DiffDividerDrawUtil.DividerPaintable {
 
         private final List<SimpleDiffChange> myChanges;
