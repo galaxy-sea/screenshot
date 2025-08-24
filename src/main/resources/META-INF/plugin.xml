@@ -78,7 +78,8 @@
                 class="plus.wcj.jetbrains.plugins.screenshot.ScreenshotAction" text="Screenshot Selected Code"
                 description="Screenshot Pro the selected code snippet">
             <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="CompareClipboardWithSelection"/>
-            <add-to-group group-id="Diff.EditorPopupMenu" anchor="after" relative-to-action="CompareClipboardWithSelection"/>/>
+            <add-to-group group-id="Diff.EditorPopupMenu" anchor="after" relative-to-action="CompareClipboardWithSelection"/>
+            <add-to-group group-id="ConsoleEditorPopupMenu" anchor="after" relative-to-action="CompareClipboardWithSelection"/>
             <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl S"/>
         </action>
     </actions>

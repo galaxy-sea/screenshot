@@ -1,8 +1,13 @@
 package plus.wcj.jetbrains.plugins.screenshot;
 
 import com.intellij.diff.FrameDiffTool;
+import com.intellij.diff.tools.simple.SimpleDiffModel;
+import com.intellij.diff.tools.simple.SimpleDiffViewer;
 import com.intellij.diff.tools.util.DiffDataKeys;
+import com.intellij.diff.tools.util.FoldingModelSupport;
 import com.intellij.diff.tools.util.side.TwosideTextDiffViewer;
+import com.intellij.diff.util.DiffDividerDrawUtil;
+import com.intellij.diff.util.DiffDrawUtil;
 import com.intellij.ide.actions.RevealFileAction;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationAction;
@@ -11,11 +16,10 @@ import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorKind;
+import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.editor.ex.EditorGutterComponentEx;
 import com.intellij.openapi.editor.impl.EditorImpl;
 import com.intellij.openapi.options.ShowSettingsUtil;
@@ -38,6 +42,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -81,8 +86,7 @@ public class ScreenshotAction extends DumbAwareAction {
         ScreenshotState state = ScreenshotStateProvider.getInstance().getState();
 
         Project project = e.getProject();
-        DataContext context = e.getDataContext();
-        Editor editor = PlatformDataKeys.EDITOR.getData(context);
+        Editor editor = e.getData(CommonDataKeys.EDITOR);
         if (editor == null) {
             notifyError(project, "Screenshotting code is only available in an editor");
             return;
@@ -102,9 +106,9 @@ public class ScreenshotAction extends DumbAwareAction {
             Color background = editor.getContentComponent().getBackground();
 
             BufferedImage leftEditor = toBufferedImage(twosideTextDiffViewer.getEditor1(), state, project);
-            // BufferedImage splitter = toBufferedImage(twosideTextDiffViewer);
             BufferedImage rightEditor = toBufferedImage(twosideTextDiffViewer.getEditor2(), state, project);
-            BufferedImage image = imageMerge(background, leftEditor, rightEditor);
+            BufferedImage splitter = toBufferedImage(twosideTextDiffViewer, leftEditor, rightEditor);
+            BufferedImage image = imageMerge(background, leftEditor, splitter, rightEditor);
 
             copyToClipboard(image, state);
             File file = saveImageToDisk(image, state, editor);
@@ -125,13 +129,32 @@ public class ScreenshotAction extends DumbAwareAction {
         }
     }
 
-    // TODO: ChangJin Wei (魏昌进) 2025/8/21 I don't know how to handle this problem either. 😂
-    private BufferedImage toBufferedImage(TwosideTextDiffViewer twosideTextDiffViewer) {
+    private BufferedImage toBufferedImage(TwosideTextDiffViewer twosideTextDiffViewer, BufferedImage leftEditor, BufferedImage rightEditor) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException, InterruptedException {
         Splitter splitter = UIUtil.findComponentOfType(twosideTextDiffViewer.getComponent(), Splitter.class);
-        JPanel divider = splitter.getDivider();
-        BufferedImage image = ImageUtil.createImage(divider.getWidth(), divider.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        Graphics2D graphics = image.createGraphics();
-        divider.paint(graphics);
+
+        int maxHeight = Math.max(leftEditor.getHeight(), rightEditor.getHeight());
+        int maxWidth = Math.max(leftEditor.getWidth(), rightEditor.getWidth());
+
+        /** {@link SimpleDiffViewer.MyDividerPainter#paint(Graphics, JComponent)} */
+        BufferedImage image = ImageUtil.createImage(splitter.getDividerWidth(), maxHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D gg = image.createGraphics();
+        gg.setColor(DiffDrawUtil.getDividerColor(twosideTextDiffViewer.getEditor1()));
+        gg.fill(new Rectangle(0, 0, splitter.getDividerWidth(), maxHeight));
+
+        /** {@link SimpleDiffModel#paintPolygons(Graphics2D, JComponent)} */
+        SimpleDiffModel myModel = ScreenshotUtil.getField(twosideTextDiffViewer, "myModel");
+        ScreenshotUtil.ScreenshotPaintable paintable = new ScreenshotUtil.ScreenshotPaintable(myModel.getChanges(), ScreenshotUtil.myViewer_needAlignChanges(myModel));
+        EditorEx editor1 = ScreenshotUtil.getEditor(twosideTextDiffViewer.getEditor1(), maxHeight, maxWidth);
+        EditorEx editor2 = ScreenshotUtil.getEditor(twosideTextDiffViewer.getEditor2(), maxHeight, maxWidth);
+        DiffDividerDrawUtil.paintPolygons(gg, splitter.getDividerWidth(), editor1, editor2, paintable);
+
+        /** {@link SimpleDiffViewer.MyFoldingModel#paintOnDivider(Graphics2D, Component)} */
+        /** {@link FoldingModelSupport.MyPaintable#paintOnDivider(Graphics2D, Component)} */
+        FoldingModelSupport myFoldingModel = ScreenshotUtil.getField(twosideTextDiffViewer, "myFoldingModel");
+        DiffDividerDrawUtil.DividerSeparatorPaintable myPaintable = ScreenshotUtil.getField(myFoldingModel, "myPaintable");
+        DiffDividerDrawUtil.paintSeparators(gg, splitter.getDividerWidth(), editor1, editor2, myPaintable);
+
+        gg.dispose();
         return image;
     }
 
