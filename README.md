@@ -1,5 +1,11 @@
 <h2>Screenshot Pro — Export code to image with one click</h2>
 
+[![Downloads](https://img.shields.io/jetbrains/plugin/d/28233)](https://plugins.jetbrains.com/plugin/28233)
+[![install](./images/plugins.jetbrains.com_embeddable_install_28233.png)](https://plugins.jetbrains.com/plugin/28233)
+
+[![card](./images/plugins.jetbrains.com_embeddable_card_28233.png)](https://plugins.jetbrains.com/plugin/28233)
+
+
 <p><b>Screenshot Pro</b> is a code-to-image plugin for the IntelliJ Platform. It renders directly from editor components and supports exporting both the <i>Gutter</i> and the <i>Content Component</i>, or only the selected code when applicable.</p>
 
 <h3>Key Features</h3>
