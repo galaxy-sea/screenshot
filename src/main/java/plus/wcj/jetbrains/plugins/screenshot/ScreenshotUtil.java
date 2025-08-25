@@ -32,8 +32,8 @@ public final class ScreenshotUtil {
 
     public static boolean myViewer_needAlignChanges(SimpleDiffModel simpleDiffModel) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         SimpleDiffViewer myViewer = getField(simpleDiffModel, "myViewer");
-        Method needAlignChanges = myViewer.getClass().getSuperclass().getDeclaredMethod("needAlignChanges");
-        needAlignChanges.setAccessible(true);                                         // 非 public 时需要
+        Method needAlignChanges = SimpleDiffViewer.class.getDeclaredMethod("needAlignChanges");
+        needAlignChanges.setAccessible(true);
         return (boolean) needAlignChanges.invoke(myViewer);
     }
 

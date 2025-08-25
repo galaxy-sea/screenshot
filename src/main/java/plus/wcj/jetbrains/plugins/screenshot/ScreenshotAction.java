@@ -199,7 +199,7 @@ public class ScreenshotAction extends DumbAwareAction {
 
         int x = 0;
         for (BufferedImage image : images) {
-            graphics.drawImage(image, x, 0, null); // 顶部对齐
+            graphics.drawImage(image, x, 0, null);
             x += image.getWidth();
         }
         return imageMerge;
