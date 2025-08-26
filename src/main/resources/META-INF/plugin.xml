@@ -50,6 +50,7 @@
     <change-notes>
         <![CDATA[
             <h3> </h3>
+              <li>1.1.2: Fix: diff bug</li>
               <li>1.1.1: Feature: Support Diff (Version Control, Compare Files, Compare Clipboard)</li>
               <li>1.0.1: Fix: includeGutter show bug</li>
               <li>1.0.0: Export code to image rendered from editor components. export selection if present; otherwise export the whole content area.</li>
