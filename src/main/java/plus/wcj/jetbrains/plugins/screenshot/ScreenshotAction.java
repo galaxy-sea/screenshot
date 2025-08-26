@@ -138,6 +138,7 @@ public class ScreenshotAction extends DumbAwareAction {
         /** {@link SimpleDiffViewer.MyDividerPainter#paint(Graphics, JComponent)} */
         BufferedImage image = ImageUtil.createImage(splitter.getDividerWidth(), maxHeight, BufferedImage.TYPE_INT_ARGB);
         Graphics2D gg = image.createGraphics();
+        gg.setClip(new Rectangle(0, 0, splitter.getDividerWidth(), maxHeight));
         gg.setColor(DiffDrawUtil.getDividerColor(twosideTextDiffViewer.getEditor1()));
         gg.fill(new Rectangle(0, 0, splitter.getDividerWidth(), maxHeight));
 
