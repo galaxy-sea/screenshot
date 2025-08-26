@@ -2,6 +2,7 @@ package plus.wcj.jetbrains.plugins.screenshot;
 
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.InlayModel;
 import com.intellij.openapi.editor.SelectionModel;
 import com.intellij.openapi.editor.colors.EditorFontType;
 import com.intellij.openapi.editor.ex.EditorGutterComponentEx;
@@ -55,7 +56,6 @@ class ComponentInfo {
             getMaxSelectedLineWidth(editor, selectionStart, selectionEnd, project);
             this.translateY = -start.y;
             selectionModel.removeSelection();
-
         } else {
             int lineCount = document.getLineCount();
             int lastLineOffset = document.getLineEndOffset(lineCount - 1);
@@ -123,9 +123,12 @@ class ComponentInfo {
 
     private void getMaxSelectedLineWidth(Editor editor, int selectionStart, int selectionEnd, Project project) {
         int maxWidth = 0;
-        int LineY = Integer.MAX_VALUE;
+        int minIndentsY = Integer.MAX_VALUE;
         int tabSize = tabSize(editor, project);
         List<Integer> LineIndentList = new ArrayList<>();
+
+        InlayModel inlayModel = editor.getInlayModel();
+
         Document document = editor.getDocument();
         int startLine = document.getLineNumber(selectionStart);
         int endLine = document.getLineNumber(selectionEnd);
@@ -133,30 +136,38 @@ class ComponentInfo {
             int lineStart = document.getLineStartOffset(line);
             int lineEnd = document.getLineEndOffset(line);
 
-            int segEnd = Math.min(lineEnd, selectionEnd);
-            Point pEnd = editor.visualPositionToXY(editor.offsetToVisualPosition(segEnd));
-            maxWidth = Math.max(maxWidth, pEnd.x);
-            LineY = getLineY(pEnd, LineY, document, lineStart, lineEnd, tabSize, LineIndentList);
+            Point pEnd = editor.visualPositionToXY(editor.offsetToVisualPosition(lineEnd));
+            minIndentsY = getMinIndentsY(pEnd, minIndentsY, document, lineStart, lineEnd, tabSize, LineIndentList);
+
+            int inlayWidth = inlayModel.getAfterLineEndElementsForLogicalLine(line)
+                                       .stream()
+                                       .mapToInt(inlay -> inlay.getRenderer().calcWidthInPixels(inlay))
+                                       .max()
+                                       .orElse(0);
+
+            maxWidth = Math.max(maxWidth, pEnd.x + inlayWidth);
+
         }
-        int miniLineIndent = LineIndentList.stream()
-                                           .min(Integer::compareTo)
-                                           .filter(x -> x > 0)
-                                           .map(count -> {
-                                               Font font = editor.getColorsScheme().getFont(EditorFontType.PLAIN);
-                                               Graphics2D graphics = (Graphics2D) editor.getComponent().getGraphics();
-                                               FontMetrics fontMetrics = graphics.getFontMetrics(font);
-                                               return fontMetrics.stringWidth(" ".repeat(count));
-                                           })
-                                           .orElse(0);
+
+        Font font = editor.getColorsScheme().getFont(EditorFontType.PLAIN);
+        Graphics2D graphics = (Graphics2D) editor.getComponent().getGraphics();
+        FontMetrics fontMetrics = graphics.getFontMetrics(font);
+
+        int miniLineIndent = fontMetrics
+                .stringWidth(" ".repeat(LineIndentList.stream()
+                                                      .mapToInt(value -> value)
+                                                      .min()
+                                                      .orElse(0)));
+
         this.width = maxWidth + 24;
         this.miniLineIndent = miniLineIndent;
     }
 
-    private static int getLineY(Point pEnd, int LineY, Document document, int lineStart, int lineEnd, int tabSize, List<Integer> LineIndentList) {
-        if (pEnd.y != LineY) {
-            LineY = pEnd.y;
+    private static int getMinIndentsY(Point pEnd, int minIndentsY, Document document, int lineStart, int lineEnd, int tabSize, List<Integer> LineIndentList) {
+        if (pEnd.y != minIndentsY) {
+            minIndentsY = pEnd.y;
             if (lineStart == lineEnd) {
-                return LineY;
+                return minIndentsY;
             }
             String text = document.getText(new TextRange(lineStart, lineEnd));
             int indent = 0;
@@ -173,7 +184,7 @@ class ComponentInfo {
             }
             LineIndentList.add(indent);
         }
-        return LineY;
+        return minIndentsY;
     }
 
 
