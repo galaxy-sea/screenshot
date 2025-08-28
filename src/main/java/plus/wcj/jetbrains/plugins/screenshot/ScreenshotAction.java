@@ -18,16 +18,19 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorKind;
 import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.editor.ex.EditorGutterComponentEx;
 import com.intellij.openapi.editor.impl.EditorImpl;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.Splitter;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.util.PlatformUtils;
@@ -66,9 +69,21 @@ public class ScreenshotAction extends DumbAwareAction {
 
     @Override
     public void update(@NotNull AnActionEvent e) {
-        Presentation presentation = e.getPresentation();
-        presentation.setEnabled(true);
+        ScreenshotState state = ScreenshotStateProvider.getInstance().getState();
 
+        Presentation presentation = e.getPresentation();
+
+        if (!(state.clipboard || state.save)) {
+            presentation.setEnabled(false);
+            Project project = e.getProject();
+            NotificationGroupManager.getInstance()
+                                    .getNotificationGroup(ID)
+                                    .createNotification(ID, "Please enable Clipboard or set an Output directory in Settings.", NotificationType.INFORMATION)
+                                    .addAction(NotificationAction.createSimpleExpiring("Open in Settings", () -> ShowSettingsUtil.getInstance().showSettingsDialog(project, ID)))
+                                    .notify(project);
+            return;
+        }
+        presentation.setEnabled(true);
         Editor editor = e.getData(CommonDataKeys.EDITOR);
         if (editor == null) {
             if ("AndroidStudio".equals(PlatformUtils.getPlatformPrefix())) {
@@ -204,13 +219,17 @@ public class ScreenshotAction extends DumbAwareAction {
         }
         BufferedImage imageMerge = ImageUtil.createImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = imageMerge.createGraphics();
-        graphics.setColor(background);
-        graphics.fillRect(0, 0, imageWidth, imageHeight);
+        try {
+            graphics.setColor(background);
+            graphics.fillRect(0, 0, imageWidth, imageHeight);
 
-        int x = 0;
-        for (BufferedImage image : images) {
-            graphics.drawImage(image, x, 0, null);
-            x += image.getWidth();
+            int x = 0;
+            for (BufferedImage image : images) {
+                graphics.drawImage(image, x, 0, null);
+                x += image.getWidth();
+            }
+        } finally {
+            graphics.dispose();
         }
         return imageMerge;
     }
@@ -259,33 +278,42 @@ public class ScreenshotAction extends DumbAwareAction {
 
 
     private void notifyInfo(Project project, ScreenshotState state, File file) {
-        NotificationAction saveToFile = null;
-        if (state.save) {
-            saveToFile = NotificationAction.createSimpleExpiring(file.getName(), () ->
-                    RevealFileAction.openFile(file)
-            );
+        String content = "Please enable Clipboard or set an Output directory in Settings.";
+        Notification n = NotificationGroupManager.getInstance()
+                                                 .getNotificationGroup(ID)
+                                                 .createNotification(ID, content, NotificationType.INFORMATION);
+
+        if (state.save && file != null && file.exists()) {
+            content = "Saved to: \n" + file.getName();
+            n.addAction(NotificationAction.createSimpleExpiring("Open in Folder", () -> RevealFileAction.openFile(file)));
+            n.addAction(NotificationAction.createSimpleExpiring("Open in Editor", () -> openImageInEditor(project, file)));
         }
 
-        String content = "Please enable Clipboard or set an Output directory in Settings.";
         if (state.clipboard && state.save) {
             content = "Copied to clipboard and saved to:";
         } else if (state.clipboard) {
             content = "Copied to clipboard.";
-        } else if (state.save) {
-            content = "Saved to:";
-        } else {
-            saveToFile = NotificationAction.createSimpleExpiring("Open Screenshot Pro settings", () ->
-                    ShowSettingsUtil.getInstance().showSettingsDialog(project, ID));
         }
 
-        Notification notification = NotificationGroupManager.getInstance()
-                                                            .getNotificationGroup(ID)
-                                                            .createNotification(ID, content, NotificationType.INFORMATION);
-        if (saveToFile != null) {
-            notification.addAction(saveToFile);
-        }
+        n.setContent(content);
+        n.notify(project);
+    }
 
-        notification.notify(project);
+    private static void openImageInEditor(Project project, File file) {
+        if (project == null || file == null) {
+            return;
+        }
+        ApplicationManager.getApplication().invokeLater(() -> {
+            VirtualFile vf = VfsUtil.findFileByIoFile(file, true);
+            if (vf != null) {
+                FileEditorManager.getInstance(project).openFile(vf, true);
+            } else {
+                NotificationGroupManager.getInstance()
+                                        .getNotificationGroup(ID)
+                                        .createNotification(ID, "Failed to open image in editor.", NotificationType.WARNING)
+                                        .notify(project);
+            }
+        });
     }
 
     private static void notifyError(Project project, String content) {
