@@ -77,7 +77,8 @@
     <actions>
         <action id="plus.wcj.jetbrains.plugins.screenshot.ScreenshotAction"
                 class="plus.wcj.jetbrains.plugins.screenshot.ScreenshotAction" text="Screenshot Selected Code"
-                description="Screenshot Pro the selected code snippet">
+                description="Screenshot Pro the selected code snippet"
+                icon="AllIcons.Actions.Dump">
             <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="CompareClipboardWithSelection"/>
             <add-to-group group-id="Diff.EditorPopupMenu" anchor="after" relative-to-action="CompareClipboardWithSelection"/>
             <add-to-group group-id="ConsoleEditorPopupMenu" anchor="after" relative-to-action="CompareClipboardWithSelection"/>
