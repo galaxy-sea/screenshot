@@ -19,6 +19,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ApplicationNamesInfo;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorKind;
 import com.intellij.openapi.editor.ex.EditorEx;
@@ -33,7 +34,6 @@ import com.intellij.openapi.ui.Splitter;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.util.PlatformUtils;
 import com.intellij.util.ui.ImageUtil;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
@@ -86,7 +86,7 @@ public class ScreenshotAction extends DumbAwareAction {
         presentation.setEnabled(true);
         Editor editor = e.getData(CommonDataKeys.EDITOR);
         if (editor == null) {
-            if ("AndroidStudio".equals(PlatformUtils.getPlatformPrefix())) {
+            if ("AndroidStudio".equals(ApplicationNamesInfo.getInstance().getFullProductName())) {
                 ToolWindow tw = e.getData(PlatformDataKeys.TOOL_WINDOW);
                 if (tw != null && "Running Devices".equalsIgnoreCase(tw.getId())) {
                     presentation.setEnabled(false);
