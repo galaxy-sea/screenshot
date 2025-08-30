@@ -86,7 +86,7 @@ public class ScreenshotAction extends DumbAwareAction {
         presentation.setEnabled(true);
         Editor editor = e.getData(CommonDataKeys.EDITOR);
         if (editor == null) {
-            if ("AndroidStudio".equals(ApplicationNamesInfo.getInstance().getFullProductName())) {
+            if ("Android Studio".equals(ApplicationNamesInfo.getInstance().getFullProductName())) {
                 ToolWindow tw = e.getData(PlatformDataKeys.TOOL_WINDOW);
                 if (tw != null && "Running Devices".equalsIgnoreCase(tw.getId())) {
                     presentation.setEnabled(false);
