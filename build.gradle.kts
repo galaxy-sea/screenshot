@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "plus.wcj.jetbrains.plugins"
-version = "1.1.3"
+version = "1.1.4"
 
 repositories {
     mavenLocal()
@@ -36,7 +36,7 @@ intellijPlatform {
     pluginConfiguration {
         ideaVersion {
             sinceBuild = "223"
-            untilBuild = "252.*"
+            untilBuild = provider { null }
         }
     }
 }
