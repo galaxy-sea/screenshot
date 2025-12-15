@@ -49,6 +49,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -184,30 +185,32 @@ public class ScreenshotAction extends DumbAwareAction {
     }
 
     private BufferedImage toBufferedImage(Editor editor, ScreenshotState state, Project project) {
-        JComponent contentComponent = editor.getContentComponent();
-        EditorGutterComponentEx gutterComponent = (EditorGutterComponentEx) editor.getGutter();
+        try (CaretVisibilityGuard ignored = new CaretVisibilityGuard(editor)) {
+            JComponent contentComponent = editor.getContentComponent();
+            EditorGutterComponentEx gutterComponent = (EditorGutterComponentEx) editor.getGutter();
 
-        ComponentInfo contentInfo = new ComponentInfo(editor, contentComponent, state, project);
-        ComponentInfo gutterInfo = new ComponentInfo(gutterComponent, contentInfo, state);
+            ComponentInfo contentInfo = new ComponentInfo(editor, contentComponent, state, project);
+            ComponentInfo gutterInfo = new ComponentInfo(gutterComponent, contentInfo, state);
 
-        contentInfo.translateXY(contentComponent, contentInfo, gutterInfo);
-        gutterInfo.translateXY(gutterComponent, contentInfo, gutterInfo);
+            contentInfo.translateXY(contentComponent, contentInfo, gutterInfo);
+            gutterInfo.translateXY(gutterComponent, contentInfo, gutterInfo);
 
-        int imageWidth = gutterInfo.width + contentInfo.width;
-        int imageHeight = Math.max(gutterInfo.height, contentInfo.height);
+            int imageWidth = gutterInfo.width + contentInfo.width;
+            int imageHeight = Math.max(gutterInfo.height, contentInfo.height);
 
-        BufferedImage image = ImageUtil.createImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D graphics = image.createGraphics();
-        try {
-            contentInfo.paint(graphics);
-            gutterInfo.paint(graphics);
-        } finally {
-            if (contentInfo.hasSelection) {
-                editor.getSelectionModel().setSelection(contentInfo.selectionStart, contentInfo.selectionEnd);
+            BufferedImage image = ImageUtil.createImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D graphics = image.createGraphics();
+            try {
+                contentInfo.paint(graphics);
+                gutterInfo.paint(graphics);
+            } finally {
+                if (contentInfo.hasSelection) {
+                    editor.getSelectionModel().setSelection(contentInfo.selectionStart, contentInfo.selectionEnd);
+                }
+                graphics.dispose();
             }
-            graphics.dispose();
+            return image;
         }
-        return image;
     }
 
     private BufferedImage imageMerge(Color background, BufferedImage... images) {
@@ -323,5 +326,75 @@ public class ScreenshotAction extends DumbAwareAction {
                                 .notify(project);
     }
 
+    /**  Ensures the caret is hidden during painting to avoid capturing it in the screenshot. */
+    private static final class CaretVisibilityGuard implements AutoCloseable {
+
+        private final Object target;
+        private final Method setter;
+        private final Boolean previous;
+
+        CaretVisibilityGuard(Editor editor) {
+            Object possibleEditor = editor instanceof EditorEx ? editor : null;
+            Object caretModel = editor.getCaretModel();
+
+            Object target = findTargetWithSetter(possibleEditor);
+            if (target == null) {
+                target = findTargetWithSetter(caretModel);
+            }
+
+            this.target = target;
+            this.setter = target == null ? null : findSetter(target);
+            this.previous = target == null ? null : readCurrentState(target);
+
+            if (this.target != null && this.setter != null) {
+                setCaretState(false);
+            }
+        }
+
+        private static Object findTargetWithSetter(Object candidate) {
+            if (candidate == null) {
+                return null;
+            }
+            return findSetter(candidate) != null ? candidate : null;
+        }
+
+        private static Method findSetter(Object target) {
+            for (String name : new String[]{"setCaretEnabled", "setCaretsEnabled", "setCaretVisible"}) {
+                try {
+                    return target.getClass().getMethod(name, boolean.class);
+                } catch (NoSuchMethodException ignored) {
+                }
+            }
+            return null;
+        }
+
+        private static Boolean readCurrentState(Object target) {
+            for (String getter : new String[]{"isCaretEnabled", "isCaretsEnabled", "isCaretVisible"}) {
+                try {
+                    Method method = target.getClass().getMethod(getter);
+                    Object result = method.invoke(target);
+                    if (result instanceof Boolean b) {
+                        return b;
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+            return null;
+        }
+
+        private void setCaretState(boolean enabled) {
+            try {
+                setter.invoke(target, enabled);
+            } catch (Exception ignored) {
+            }
+        }
+
+        @Override
+        public void close() {
+            if (target != null && setter != null) {
+                setCaretState(previous != null ? previous : true);
+            }
+        }
+    }
 
 }
