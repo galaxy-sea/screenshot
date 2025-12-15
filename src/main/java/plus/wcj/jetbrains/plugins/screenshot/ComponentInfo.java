@@ -140,10 +140,10 @@ class ComponentInfo {
             minIndentsY = getMinIndentsY(pEnd, minIndentsY, document, lineStart, lineEnd, tabSize, LineIndentList);
 
             int inlayWidth = inlayModel.getAfterLineEndElementsForLogicalLine(line)
-                                       .stream()
-                                       .mapToInt(inlay -> inlay.getRenderer().calcWidthInPixels(inlay))
-                                       .max()
-                                       .orElse(0);
+                    .stream()
+                    .mapToInt(inlay -> inlay.getRenderer().calcWidthInPixels(inlay))
+                    .max()
+                    .orElse(0);
 
             maxWidth = Math.max(maxWidth, pEnd.x + inlayWidth);
 
@@ -153,14 +153,13 @@ class ComponentInfo {
         Graphics2D graphics = (Graphics2D) editor.getComponent().getGraphics();
         FontMetrics fontMetrics = graphics.getFontMetrics(font);
 
-        int miniLineIndent = fontMetrics
-                .stringWidth(" ".repeat(LineIndentList.stream()
-                                                      .mapToInt(value -> value)
-                                                      .min()
-                                                      .orElse(0)));
-
         this.width = maxWidth + 24;
-        this.miniLineIndent = miniLineIndent;
+        this.miniLineIndent = fontMetrics
+                .stringWidth(" ".repeat(Math.max(LineIndentList.stream()
+                                .mapToInt(value -> value)
+                                .min()
+                                .orElse(0)
+                        , 0)));
     }
 
     private static int getMinIndentsY(Point pEnd, int minIndentsY, Document document, int lineStart, int lineEnd, int tabSize, List<Integer> LineIndentList) {
@@ -182,7 +181,7 @@ class ComponentInfo {
                 }
                 break;
             }
-            LineIndentList.add(indent);
+            LineIndentList.add(indent - 1);
         }
         return minIndentsY;
     }

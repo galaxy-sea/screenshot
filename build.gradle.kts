@@ -23,8 +23,8 @@ repositories {
 dependencies {
     intellijPlatform {
         create("2022.3")
-//        create("2025.1")
 //        androidStudio("2025.1.2.11")
+//        create("2025.2")
         testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform)
 
       // Add necessary plugin dependencies for compilation here, example:
