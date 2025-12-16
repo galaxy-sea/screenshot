@@ -20,7 +20,6 @@
           </grid>
         </constraints>
         <properties>
-          <label value="Include gutter"/>
           <selected value="true"/>
           <text value="Include gutter"/>
           <toolTipText value=""/>
@@ -33,7 +32,6 @@
           </grid>
         </constraints>
         <properties>
-          <label value="Clipboard"/>
           <selected value="true"/>
           <text value="Clipboard"/>
           <toolTipText value=""/>
@@ -46,7 +44,6 @@
           </grid>
         </constraints>
         <properties>
-          <label value="Save"/>
           <selected value="true"/>
           <text value="Save"/>
           <toolTipText value=""/>
