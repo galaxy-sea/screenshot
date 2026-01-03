@@ -1,3 +1,6 @@
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
 plugins {
     id("java")
 //    id("org.jetbrains.kotlin.jvm") version "2.1.0"
@@ -5,7 +8,9 @@ plugins {
 }
 
 group = "plus.wcj.jetbrains.plugins"
-version = "1.1.5"
+version = run {
+    LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy.M.d.1HHmmss"))
+}
 
 repositories {
     mavenLocal()
@@ -38,6 +43,9 @@ intellijPlatform {
             sinceBuild = "223"
             untilBuild = provider { null }
         }
+    }
+    publishing {
+        token = providers.gradleProperty("intellijPlatformPublishingToken")
     }
 }
 
